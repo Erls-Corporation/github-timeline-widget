@@ -19,6 +19,8 @@
 .github-timeline-event {
   clear: both;
   margin-bottom: 2px;
+  margin-left: 1.5em;
+  list-style: disc;
 }
 
 .github-timeline-event-icon {
@@ -35,7 +37,7 @@
   font-family: "lucida grande", lucida, tahoma, helvetica, arial, sans-serif;
   font-size: 12px;
   display: block;
-  margin-left: 19px;
+  margin-left: 0;
 }
 
 .github-timeline-event-text a {
@@ -52,7 +54,7 @@
 }
 
 .github-timeline-source-link {
-  margin-left: 19px;
+  margin-left: 0;
   font-size: 10px;
   text-decoration: none;
   color: #000080;

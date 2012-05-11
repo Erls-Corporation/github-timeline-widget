@@ -1,13 +1,239 @@
-var GitHubTimelineApi,__bind=function(e,a){return function(){return e.apply(a,arguments)}};
-GitHubTimelineApi=function(){function e(){}e.prototype._strongify=function(a){return"<strong>"+a+"</strong>"};e.prototype.formatAsTimeAgo=function(a){var b;b=((new Date).getTime()-a.getTime())/1E3;a=Math.floor(b/86400);if(isNaN(a)||a<0)return null;if(a===0)if(b<60)return"just now";else if(b<120)return"1 minute ago";else if(b<3600)return""+Math.floor(b/60)+" minutes ago";else if(b<7200)return"1 hour ago";else{if(b<86400)return""+Math.floor(b/3600)+" hours ago"}else return a===1?"Yesterday":a<7?""+
-a+" days ago":""+Math.ceil(a/7)+" weeks ago"};e.prototype._parseGitHubEvent=function(a){var b,c,d,f,e;e=(a.url!=null?a.url:void 0)||(((f=a.payload)!=null?f.url:void 0)!=null?a.payload.url:void 0)||"https://github.com";e=e.replace("github.com//","github.com/");f=(new Date((a.created_at!=null?a.created_at:void 0)||0)).valueOf();a.repository!=null&&(c=this._strongify(""+a.repository.owner+"/"+a.repository.name));switch(a.type){case "CreateEvent":b="https://github.com/images/modules/dashboard/news/create.png";
-switch(a.payload.object){case "repository":d="created repo "+c;break;case "tag":d="created tag "+this._strongify(a.payload.object_name)+" at "+c;break;case "branch":d="created branch "+this._strongify(a.payload.object_name)+" at "+c}break;case "MemberEvent":switch(a.payload.action){case "added":b="https://github.com/images/modules/dashboard/news/member_add.png",d="added "+this._strongify(a.payload.member)+" to "+c}break;case "PushEvent":a=a.payload.ref.substr(a.payload.ref.lastIndexOf("/")+1);b="https://github.com/images/modules/dashboard/news/push.png";
-d="pushed to "+this._strongify(a)+" at "+c;break;case "ForkApplyEvent":b="https://github.com/images/modules/dashboard/news/merge.png";d="merged to "+c;break;case "ForkEvent":b="https://github.com/images/modules/dashboard/news/fork.png";d="forked "+c;break;case "WatchEvent":switch(a.payload.action){case "started":b="https://github.com/images/modules/dashboard/news/watch_started.png";d="started watching "+c;break;case "stopped":b="https://github.com/images/modules/dashboard/news/watch_stopped.png",
-d="stopped watching "+c}break;case "FollowEvent":d=null;break;case "IssuesEvent":case "PullRequestEvent":switch(a.payload.action){case "opened":case "reopened":b="https://github.com/images/modules/dashboard/news/issues_opened.png";d="opened issued on "+c;break;case "closed":b="https://github.com/images/modules/dashboard/news/issues_closed.png",d="closed issue on "+c}break;case "GistEvent":b="https://github.com/images/modules/dashboard/news/gist.png";switch(a.payload.action){case "create":d="created "+
-this._strongify(a.payload.name);break;case "update":d="updated "+this._strongify(a.payload.name);break;case "fork":d="forked "+this._strongify(a.payload.name)}break;case "WikiEvent":case "GollumEvent":b="https://github.com/images/modules/dashboard/news/wiki.png";switch(a.payload.action){case "created":d="created a wiki page on "+c;break;case "edited":d="edited a wiki page on "+c}break;case "CommitCommentEvent":b="https://github.com/images/modules/dashboard/news/comment.png";d="commented on "+c;break;
-case "DeleteEvent":b="https://github.com/images/modules/dashboard/news/delete.png";switch(a.payload.ref_type){case "branch":d="deleted branch "+this._strongify(a.payload.ref)+" at "+c}break;case "PublicEvent":b="https://github.com/images/modules/dashboard/news/public.png";d="open sourced "+c;break;case "DownloadEvent":d=null}return d!=null?[e,b,f,d]:[]};e.prototype._parseGitHubTimeline=function(a,b){var c,d,e,g;d=[];e=0;for(g=a.length;e<g;e++)c=a[e],c=this._parseGitHubEvent(c),c.length&&d.push(c);
-return b(d)};e.prototype.getTimelineForUser=function(a,b){jQuery.ajaxSetup({cache:!0});return jQuery.getJSON("https://github.com/"+a+".json?callback=?",__bind(function(a){return this._parseGitHubTimeline(a,b)},this))};e.prototype.getUserIdForUser=function(a,b){jQuery.ajaxSetup({cache:!0});return jQuery.getJSON("https://github.com/api/v2/json/user/show/"+a+"?callback=?",__bind(function(a){return b(a.user.id)},this))};return e}();
-jQuery.fn.githubTimelineWidget=function(e){var a,b,c,d,f,g,i;a={username:"timeline",limit:5,user_id:!0};d=document.getElementsByTagName("script");f=0;for(g=d.length;f<g;f++)if(b=d[f],(i=b.src)!=null&&i.match(/github-timeline-widget\.js/)){c=b.src.replace(/github-timeline-widget\.js.*$/,"");break}c!=null&&jQuery("<link/>").attr("rel","stylesheet").attr("type","text/css").attr("href",c+"github-timeline-widget.css").prependTo("head");return this.each(function(){var b,d,c,f;c=this;b=jQuery(this);c.opts=
-jQuery.extend({},a,e);jQuery("<a>").attr("class","github-timeline-header").attr("href","https://github.com/"+c.opts.username).text(""+c.opts.username+" on GitHub").appendTo(b);f=jQuery("<ul>").attr("class","github-timeline-events").appendTo(b);d=new GitHubTimelineApi;d.getTimelineForUser(c.opts.username,function(a){var e,h,g,i,l,j,k,m;i=c.opts.limit;k=0;for(m=a.length;k<m;k++){h=a[k];if(i--===0)break;g=h[0];e=h[1];j=h[2];l=h[3];h=jQuery("<li>").attr("class","github-timeline-event").appendTo(f);g=
-jQuery("<a>").attr("href",g);e&&jQuery("<img>").attr("src",e).appendTo(h).wrap(jQuery("<div>").attr("class","github-timeline-event-icon")).wrap(g);e=jQuery("<div>").attr("class","github-timeline-event-text").html(l).appendTo(h).wrapInner(g);j&&(j=d.formatAsTimeAgo(new Date(j)))&&jQuery("<div>").attr("class","github-timeline-event-time").text(j).appendTo(e)}return jQuery("<a>").attr("class","github-timeline-source-link").attr("href","https://github.com/alindeman/github-timeline-widget").text("GitHub Timeline Widget").appendTo(b)});
-if(c.opts.user_id)return d.getUserIdForUser(c.opts.username,function(a){jQuery("<br/>").appendTo(".github-timeline-header");return jQuery("<span>").attr("class","github-timeline-header-user-id").text("(user #"+a+")").appendTo(".github-timeline-header")})})};
+var GitHubTimelineApi;
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+GitHubTimelineApi = (function() {
+  function GitHubTimelineApi() {}
+  GitHubTimelineApi.prototype._strongify = function(string) {
+    return '<strong>' + string + '</strong>';
+  };
+  GitHubTimelineApi.prototype.formatAsTimeAgo = function(date) {
+    var day_diff, diff;
+    diff = ((new Date).getTime() - date.getTime()) / 1000;
+    day_diff = Math.floor(diff / 86400);
+    if ((isNaN(day_diff)) || (day_diff < 0)) {
+      return null;
+    }
+    if (day_diff === 0) {
+      if (diff < 60) {
+        return "just now";
+      } else if (diff < 120) {
+        return "1 minute ago";
+      } else if (diff < 3600) {
+        return "" + (Math.floor(diff / 60)) + " minutes ago";
+      } else if (diff < 7200) {
+        return "1 hour ago";
+      } else if (diff < 86400) {
+        return "" + (Math.floor(diff / 3600)) + " hours ago";
+      }
+    } else if (day_diff === 1) {
+      return "Yesterday";
+    } else if (day_diff < 7) {
+      return "" + day_diff + " days ago";
+    } else {
+      return "" + (Math.ceil(day_diff / 7)) + " weeks ago";
+    }
+  };
+  GitHubTimelineApi.prototype._parseGitHubEvent = function(event) {
+    var branch, icon_url, repository, text, timestamp, url, _ref;
+    url = (event.url != null ? event.url : void 0) || (((_ref = event.payload) != null ? _ref.url : void 0) != null ? event.payload.url : void 0) || 'https://github.com';
+    url = url.replace('github.com//', 'github.com/');
+    timestamp = new Date((event.created_at != null ? event.created_at : void 0) || 0).valueOf();
+    if (event.repository != null) {
+      repository = this._strongify("" + event.repository.owner + "/" + event.repository.name);
+    }
+    switch (event.type) {
+      case 'CreateEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/create.png';
+        switch (event.payload.object) {
+          case 'repository':
+            text = "created repo " + repository;
+            break;
+          case 'tag':
+            text = "created tag " + (this._strongify(event.payload.object_name)) + " at " + repository;
+            break;
+          case 'branch':
+            text = "created branch " + (this._strongify(event.payload.object_name)) + " at " + repository;
+        }
+        break;
+      case 'MemberEvent':
+        switch (event.payload.action) {
+          case 'added':
+            icon_url = 'https://github.com/images/modules/dashboard/news/member_add.png';
+            text = "added " + (this._strongify(event.payload.member)) + " to " + repository;
+        }
+        break;
+      case 'PushEvent':
+        branch = event.payload.ref.substr(event.payload.ref.lastIndexOf('/') + 1);
+        icon_url = 'https://github.com/images/modules/dashboard/news/push.png';
+        text = "pushed to " + (this._strongify(branch)) + " at " + repository;
+        break;
+      case 'ForkApplyEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/merge.png';
+        text = "merged to " + repository;
+        break;
+      case 'ForkEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/fork.png';
+        text = "forked " + repository;
+        break;
+      case 'WatchEvent':
+        switch (event.payload.action) {
+          case 'started':
+            icon_url = 'https://github.com/images/modules/dashboard/news/watch_started.png';
+            text = "started watching " + repository;
+            break;
+          case 'stopped':
+            icon_url = 'https://github.com/images/modules/dashboard/news/watch_stopped.png';
+            text = "stopped watching " + repository;
+        }
+        break;
+      case 'FollowEvent':
+        text = null;
+        break;
+      case 'IssuesEvent':
+      case 'PullRequestEvent':
+        switch (event.payload.action) {
+          case 'opened':
+          case 'reopened':
+            icon_url = 'https://github.com/images/modules/dashboard/news/issues_opened.png';
+            text = "opened issued on " + repository;
+            break;
+          case 'closed':
+            icon_url = 'https://github.com/images/modules/dashboard/news/issues_closed.png';
+            text = "closed issue on " + repository;
+        }
+        break;
+      case 'GistEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/gist.png';
+        switch (event.payload.action) {
+          case 'create':
+            text = "created " + (this._strongify(event.payload.name));
+            break;
+          case 'update':
+            text = "updated " + (this._strongify(event.payload.name));
+            break;
+          case 'fork':
+            text = "forked " + (this._strongify(event.payload.name));
+        }
+        break;
+      case 'WikiEvent':
+      case 'GollumEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/wiki.png';
+        switch (event.payload.action) {
+          case 'created':
+            text = "created a wiki page on " + repository;
+            break;
+          case 'edited':
+            text = "edited a wiki page on " + repository;
+        }
+        break;
+      case 'CommitCommentEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/comment.png';
+        text = "commented on " + repository;
+        break;
+      case 'DeleteEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/delete.png';
+        switch (event.payload.ref_type) {
+          case 'branch':
+            text = "deleted branch " + (this._strongify(event.payload.ref)) + " at " + repository;
+        }
+        break;
+      case 'PublicEvent':
+        icon_url = 'https://github.com/images/modules/dashboard/news/public.png';
+        text = "open sourced " + repository;
+        break;
+      case 'DownloadEvent':
+        text = null;
+    }
+    if (text != null) {
+      return [url, icon_url, timestamp, text];
+    } else {
+      return [];
+    }
+  };
+  GitHubTimelineApi.prototype._parseGitHubTimeline = function(data, callback) {
+    var event, event_data, events, _i, _len;
+    events = [];
+    for (_i = 0, _len = data.length; _i < _len; _i++) {
+      event = data[_i];
+      event_data = this._parseGitHubEvent(event);
+      if (event_data.length) {
+        events.push(event_data);
+      }
+    }
+    return callback(events);
+  };
+  GitHubTimelineApi.prototype.getTimelineForUser = function(user, callback) {
+    jQuery.ajaxSetup({
+      cache: true
+    });
+    return jQuery.getJSON('https://github.com/' + user + '.json?callback=?', __bind(function(data) {
+      return this._parseGitHubTimeline(data, callback);
+    }, this));
+  };
+  GitHubTimelineApi.prototype.getUserIdForUser = function(user, callback) {
+    jQuery.ajaxSetup({
+      cache: true
+    });
+    return jQuery.getJSON('https://github.com/api/v2/json/user/show/' + user + '?callback=?', __bind(function(data) {
+      return callback(data.user.id);
+    }, this));
+  };
+  return GitHubTimelineApi;
+})();
+jQuery.fn.githubTimelineWidget = function(options) {
+  var defaults, script, script_path, scripts, _i, _len, _ref;
+  defaults = {
+    username: 'timeline',
+    limit: 5,
+    user_id: true
+  };
+  scripts = document.getElementsByTagName('script');
+  for (_i = 0, _len = scripts.length; _i < _len; _i++) {
+    script = scripts[_i];
+    if ((_ref = script.src) != null ? _ref.match(/github-timeline-widget\.js/) : void 0) {
+      script_path = script.src.replace(/github-timeline-widget\.js.*$/, '');
+      break;
+    }
+  }
+  if ((script_path != null) && false) {
+    jQuery('<link/>').attr('rel', 'stylesheet').attr('type', 'text/css').attr('href', script_path + 'github-timeline-widget.css').prependTo('head');
+  }
+  return this.each(function() {
+    var $this, api, it, list;
+    it = this;
+    $this = jQuery(this);
+    it.opts = jQuery.extend({}, defaults, options);
+    jQuery('<a>').attr('class', 'github-timeline-header').attr('href', "https://github.com/" + it.opts.username).text("" + it.opts.username + " on GitHub").appendTo($this);
+    list = jQuery('<ul>').attr('class', 'github-timeline-events').appendTo($this);
+    api = new GitHubTimelineApi;
+    api.getTimelineForUser(it.opts.username, function(events) {
+      var div_text, event, event_link, events_left, icon_url, list_item, text, timestamp, timestamp_ago, url, _j, _len2;
+      events_left = it.opts.limit;
+      for (_j = 0, _len2 = events.length; _j < _len2; _j++) {
+        event = events[_j];
+        if (events_left-- === 0) {
+          break;
+        }
+        url = event[0], icon_url = event[1], timestamp = event[2], text = event[3];
+        list_item = jQuery('<li>').attr('class', 'github-timeline-event').appendTo(list);
+        event_link = jQuery('<a>').attr('href', url);
+        if (icon_url && false) {
+          jQuery('<img>').attr('src', icon_url).appendTo(list_item).wrap(jQuery('<div>').attr('class', 'github-timeline-event-icon')).wrap(event_link);
+        }
+        div_text = jQuery('<div>').attr('class', 'github-timeline-event-text').html(text).appendTo(list_item).wrapInner(event_link);
+        if (timestamp) {
+          timestamp_ago = api.formatAsTimeAgo(new Date(timestamp));
+          if (timestamp_ago) {
+            jQuery('<div>').attr('class', 'github-timeline-event-time').text(timestamp_ago).appendTo(div_text);
+          }
+        }
+      }
+      return jQuery('<a>').attr('class', 'github-timeline-source-link').attr('href', 'https://github.com/alindeman/github-timeline-widget').text('GitHub Timeline Widget').appendTo($this);
+    });
+    if (it.opts.user_id) {
+      return api.getUserIdForUser(it.opts.username, function(user_id) {
+        jQuery('<br/>').appendTo('.github-timeline-header');
+        return jQuery('<span>').attr('class', 'github-timeline-header-user-id').text("(user #" + user_id + ")").appendTo('.github-timeline-header');
+      });
+    }
+  });
+};

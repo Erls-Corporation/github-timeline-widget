@@ -12,7 +12,7 @@ jQuery.fn.githubTimelineWidget = (options) ->
       break
 
   # Load stylesheet
-  if script_path?
+  if script_path? && false
     jQuery('<link/>')
     .attr('rel', 'stylesheet')
     .attr('type', 'text/css')
@@ -48,7 +48,7 @@ jQuery.fn.githubTimelineWidget = (options) ->
 
         # Splat out components
         [url, icon_url, timestamp, text] = event
-        
+
         list_item = jQuery('<li>')
           .attr('class', 'github-timeline-event')
           .appendTo(list)
@@ -56,7 +56,7 @@ jQuery.fn.githubTimelineWidget = (options) ->
         event_link = jQuery('<a>')
           .attr('href', url)
 
-        if icon_url
+        if icon_url && false
           jQuery('<img>')
             .attr('src', icon_url)
             .appendTo(list_item)
